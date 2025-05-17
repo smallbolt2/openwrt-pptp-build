@@ -22,15 +22,16 @@ endef
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
-	tar -xzf $(DL_DIR)/$(PKG_SOURCE) -C $(PKG_BUILD_DIR)
+	mkdir -p $(PKG_BUILD_DIR)
+	tar -xzf $(DL_DIR)/$(PKG_SOURCE) -C $(PKG_BUILD_DIR) --strip-components=1
 endef
 
 define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) \
 		CC="$(TARGET_CC)" \
-		CFLAGS="$(TARGET_CFLAGS)" \
-		DESTDIR="$(PKG_INSTALL_DIR)" \
-		install
+		CFLAGS="$(TARGET_CFLAGS)"
+	$(INSTALL_DIR) $(PKG_INSTALL_DIR)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/pptp $(PKG_INSTALL_DIR)/usr/sbin/
 endef
 
 define Package/pptp-linux/install
