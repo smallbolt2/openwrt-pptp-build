@@ -26,6 +26,8 @@ jobs:
       - name: Prepare PPTP source
         run: |
           # 复制源码到 SDK 的 dl 目录
+          mkdir -p openwrt-sdk/dl/
+          chmod 755 openwrt-sdk/dl/
           cp pptp-linux_1.10.0.orig.tar.gz openwrt-sdk/dl/
 
           # 确保 Config.in 和 Makefile 存在
