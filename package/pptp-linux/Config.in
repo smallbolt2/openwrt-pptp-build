@@ -1,0 +1,8 @@
+mkdir -p package/pptp-linux
+cat <<EOF > package/pptp-linux/Config.in
+config PACKAGE_pptp-linux
+    bool "PPTP Client for Linux"
+    default n
+    help
+        PPTP client implementation for Linux.
+EOF
