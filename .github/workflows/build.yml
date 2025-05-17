@@ -37,7 +37,11 @@ jobs:
         run: |
           cd openwrt-sdk
           echo "src-link custom $(pwd)/package" >> feeds.conf.default
-
+          export PATH=$PATH:$(pwd)/staging_dir/host/bin
+          if [ ! -f "scripts/feeds" ]; then
+           echo "ERROR: SDK is incomplete, re-downloading...";
+           exit 1;
+          fi
           # 更新并安装 feeds
           ./scripts/feeds update -a
           ./scripts/feeds install -a
