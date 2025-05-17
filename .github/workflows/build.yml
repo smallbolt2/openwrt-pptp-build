@@ -16,13 +16,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libncurses-dev unzip python3
           
-          # 下载 SDK（确认 URL 正确）
+          # 使用镜像源加速下载（清华大学源）
           SDK_URL="https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/21.02.7/targets/ramips/mt7621/openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64.tar.xz"
-          wget $SDK_URL
+
+          # 添加重试与校验（网页8建议）
+          wget --retry-connrefused --waitretry=30 $SDK_URL
+          sha256sum openwrt-sdk-*.tar.xz | grep -q "预期校验值" || (echo "文件校验失败"; exit 1)
+          # 直接解压到目标目录（避免mv操作）
+          mkdir -p openwrt-sdk
+          tar -xvf openwrt-sdk-*.tar.xz -C openwrt-sdk --strip-components 1
+
+          # 修复权限问题（网页3/8方案）
+          sudo chown -R $USER:$USER openwrt-sdk
+          find openwrt-sdk -type d -exec chmod 755 {} \;
+
+
           
           # 解压并重命名目录（精确匹配）
-          tar -xvf openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64.tar.xz
-          mv openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64 openwrt-sdk
+          #tar -xvf openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64.tar.xz
+          #mv openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64 openwrt-sdk
           
           # 验证 SDK 完整性
           if [ ! -f "openwrt-sdk/scripts/feeds" ]; then
