@@ -16,7 +16,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libncurses-dev unzip python3
           
-          # 使用镜像源加速下载（清华大学源）
+          # 下载 OpenWrt SDK（以 21.02.7/mipsel_24kc 为例）
           SDK_URL="https://downloads.openwrt.org/releases/21.02.7/targets/ramips/mt7621/openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64.tar.xz"
 
           # 添加重试与校验（网页8建议）
