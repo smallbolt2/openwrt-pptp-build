@@ -60,19 +60,18 @@ jobs:
       - name: Compile IPK
         run: |
           cd openwrt-sdk
-          echo "src-link custom $(pwd)/package" >> feeds.conf.default
-          
-          # 更新 feeds（强制覆盖）
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a -f
-          
-          # 清理并配置编译选项
+          ./scripts/feeds install automake libtool
           make defconfig
-          echo "CONFIG_PACKAGE_pptp-linux=y" >> .config
           make package/pptp-linux/compile V=s
 
+      - name: Debug IPK files
+        run: ls -lR ${{ github.workspace }}/openwrt-sdk/bin
+
+      
       - name: Upload IPK
         uses: actions/upload-artifact@v4
         with:
           name: pptp-ipk
-          path: openwrt-sdk/bin/packages/mipsel_24kc/base/pptp-linux_*.ipk
+          path: ${{ github.workspace }}/openwrt-sdk/bin/**/pptp-linux_*.ipk
+          if-no-files-found: error  # 强制报错而非警告
+          retention-days: 7
