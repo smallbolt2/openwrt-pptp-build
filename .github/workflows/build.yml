@@ -1,1 +1,53 @@
 
+name: Build PPTP IPK
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-ipk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up OpenWrt SDK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libncurses-dev unzip python3
+
+          # 下载 OpenWrt SDK（以 21.02.7/mipsel_24kc 为例）
+          SDK_URL="https://downloads.openwrt.org/releases/21.02.7/targets/ramips/mt7621/openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64.tar.xz"
+          wget $SDK_URL
+          tar -xvf openwrt-sdk-*.tar.xz
+          mv openwrt-sdk-* openwrt-sdk
+
+      - name: Prepare PPTP source
+        run: |
+          # 复制源码到 SDK 目录
+          cp pptp-linux_1.10.0.orig.tar.gz openwrt-sdk/
+
+          # 复制自定义包定义
+          mkdir -p openwrt-sdk/package/pptp-linux
+          cp -r package/pptp-linux/* openwrt-sdk/package/pptp-linux/
+
+      - name: Compile IPK
+        run: |
+          cd openwrt-sdk
+          echo "src-link custom /github/workspace/openwrt-sdk/package" >> feeds.conf.default
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+          # 配置编译选项
+          make defconfig
+          echo "CONFIG_PACKAGE_pptp-linux=y" >> .config
+          make package/pptp-linux/compile V=s
+
+      - name: Upload IPK
+        uses: actions/upload-artifact@v3
+        with:
+          name: pptp-ipk
+          path: openwrt-sdk/bin/packages/mipsel_24kc/base/pptp-linux_*.ipk
