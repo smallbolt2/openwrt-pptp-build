@@ -20,35 +20,27 @@ jobs:
           tar -xvf openwrt-sdk-*.tar.xz
           mv openwrt-sdk-* openwrt-sdk
 
-          # 验证 SDK 完整性
-          if [ ! -f "openwrt-sdk/Config.in" ]; then
-            echo "Error: SDK missing key files!"
-            exit 1
-          fi
+          # 关键步骤：将自定义包目录软链接到 SDK 的标准位置
+          ln -s $(pwd)/openwrt-sdk/package ./package
 
       - name: Prepare PPTP source
         run: |
-          cp pptp-linux_1.10.0.orig.tar.gz openwrt-sdk/
-          mkdir -p openwrt-sdk/package/pptp-linux
-          cp -r package/pptp-linux/* openwrt-sdk/package/pptp-linux/
+          # 复制源码到 SDK 的 dl 目录
+          cp pptp-linux_1.10.0.orig.tar.gz openwrt-sdk/dl/
 
-          # 生成 Config.in
-          echo "config PACKAGE_pptp-linux" > openwrt-sdk/package/pptp-linux/Config.in
-          echo "    bool \"PPTP Client for Linux\"" >> openwrt-sdk/package/pptp-linux/Config.in
-          echo "    default n" >> openwrt-sdk/package/pptp-linux/Config.in
-          echo "    help" >> openwrt-sdk/package/pptp-linux/Config.in
-          echo "        PPTP client implementation for Linux." >> openwrt-sdk/package/pptp-linux/Config.in
+          # 确保 Config.in 和 Makefile 存在
+          ls -l openwrt-sdk/package/pptp-linux/
 
       - name: Compile IPK
         run: |
           cd openwrt-sdk
           echo "src-link custom $(pwd)/package" >> feeds.conf.default
+
+          # 更新并安装 feeds
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-          # 调试：查看目录结构
-          ls -lR package/pptp-linux
-
+          # 强制包含自定义包配置
           make defconfig
           echo "CONFIG_PACKAGE_pptp-linux=y" >> .config
           make package/pptp-linux/compile V=s
