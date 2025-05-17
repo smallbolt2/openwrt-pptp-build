@@ -15,38 +15,44 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libncurses-dev unzip python3
+          
+          # 下载 SDK（确认 URL 正确）
           SDK_URL="https://downloads.openwrt.org/releases/21.02.7/targets/ramips/mt7621/openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64.tar.xz"
           wget $SDK_URL
-          tar -xvf openwrt-sdk-*.tar.xz
-          mv openwrt-sdk-* openwrt-sdk
-
-          # 关键步骤：将自定义包目录软链接到 SDK 的标准位置
-          ln -s $(pwd)/openwrt-sdk/package ./package
+          
+          # 解压并重命名目录（精确匹配）
+          tar -xvf openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64.tar.xz
+          mv openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64 openwrt-sdk
+          
+          # 验证 SDK 完整性
+          if [ ! -f "openwrt-sdk/scripts/feeds" ]; then
+            echo "Error: SDK is missing critical files!"
+            exit 1
+          fi
 
       - name: Prepare PPTP source
         run: |
           # 复制源码到 SDK 的 dl 目录
-          mkdir -p openwrt-sdk/dl/
-          chmod 755 openwrt-sdk/dl/
+          mkdir -p openwrt-sdk/dl
           cp pptp-linux_1.10.0.orig.tar.gz openwrt-sdk/dl/
-
-          # 确保 Config.in 和 Makefile 存在
-          ls -l openwrt-sdk/package/pptp-linux/
+          
+          # 复制包定义到 SDK 的 package 目录
+          mkdir -p openwrt-sdk/package/pptp-linux
+          cp -r package/pptp-linux/* openwrt-sdk/package/pptp-linux/
+          
+          # 调试：查看目录结构
+          ls -lR openwrt-sdk/package/pptp-linux
 
       - name: Compile IPK
         run: |
           cd openwrt-sdk
           echo "src-link custom $(pwd)/package" >> feeds.conf.default
-          export PATH=$PATH:$(pwd)/staging_dir/host/bin
-          if [ ! -f "scripts/feeds" ]; then
-           echo "ERROR: SDK is incomplete, re-downloading...";
-           exit 1;
-          fi
-          # 更新并安装 feeds
+          
+          # 更新 feeds（强制覆盖）
           ./scripts/feeds update -a
-          ./scripts/feeds install -a
-
-          # 强制包含自定义包配置
+          ./scripts/feeds install -a -f
+          
+          # 清理并配置编译选项
           make defconfig
           echo "CONFIG_PACKAGE_pptp-linux=y" >> .config
           make package/pptp-linux/compile V=s
@@ -56,4 +62,3 @@ jobs:
         with:
           name: pptp-ipk
           path: openwrt-sdk/bin/packages/mipsel_24kc/base/pptp-linux_*.ipk
- 
