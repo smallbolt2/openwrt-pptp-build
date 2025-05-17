@@ -46,8 +46,10 @@ jobs:
         run: |
           # 复制源码到 SDK 的 dl 目录
           mkdir -p openwrt-sdk/dl
+          if [ ! -f "pptp-linux_1.10.0.orig.tar.gz" ]; then
+           wget https://mirror.ghproxy.com/https://github.com/第三方仓库/pptp-linux/releases/download/v1.10.0/pptp-linux_1.10.0.orig.tar.gz
+          fi
           cp pptp-linux_1.10.0.orig.tar.gz openwrt-sdk/dl/
-          
           # 复制包定义到 SDK 的 package 目录
           mkdir -p openwrt-sdk/package/pptp-linux
           cp -r package/pptp-linux/* openwrt-sdk/package/pptp-linux/
