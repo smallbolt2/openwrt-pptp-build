@@ -10,14 +10,14 @@ PKG_HASH:=skip
 include $(INCLUDE_DIR)/package.mk
 
 define Package/pptp-linux
-	SECTION:=net
-	CATEGORY:=Network
-	TITLE:=PPTP Client for Linux
-	DEPENDS:=+ppp-mod-pptp +kmod-pptp
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=PPTP Client for Linux
+  DEPENDS:=+ppp-mod-pptp +kmod-pptp
 endef
 
 define Package/pptp-linux/description
-	PPTP client implementation for Linux.
+  PPTP client implementation for Linux.
 endef
 
 define Build/Prepare
@@ -29,7 +29,8 @@ define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) \
 		CC="$(TARGET_CC)" \
 		CFLAGS="$(TARGET_CFLAGS)" \
-		DESTDIR="$(PKG_INSTALL_DIR)" install
+		DESTDIR="$(PKG_INSTALL_DIR)" \
+		install
 endef
 
 define Package/pptp-linux/install
