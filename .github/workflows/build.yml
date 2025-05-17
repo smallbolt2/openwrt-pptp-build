@@ -18,10 +18,13 @@ jobs:
           
           # 下载 OpenWrt SDK（以 21.02.7/mipsel_24kc 为例）
           SDK_URL="https://downloads.openwrt.org/releases/21.02.7/targets/ramips/mt7621/openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64.tar.xz"
-
+          # 官方校验文件地址（需与 SDK 版本匹配）
+          wget https://downloads.openwrt.org/releases/21.02.7/targets/ramips/mt7621/sha256sums
+          # 提取对应 SDK 的校验值
+          grep 'openwrt-sdk-21.02.7-ramips-mt7621_gcc-8.4.0_musl.Linux-x86_64.tar.xz' sha256sums | awk '{print $1}
           # 添加重试与校验（网页8建议）
           wget --retry-connrefused --waitretry=30 $SDK_URL
-          sha256sum openwrt-sdk-*.tar.xz | grep -q "预期校验值" || (echo "文件校验失败"; exit 1)
+          sha256sum openwrt-sdk-*.tar.xz | grep -q "ceed7c1869a373b23ff2826ccce587723b0a0bcf8ce9bfa377557c705a41638a" || (echo "文件校验失败"; exit 1)
           # 直接解压到目标目录（避免mv操作）
           mkdir -p openwrt-sdk
           tar -xvf openwrt-sdk-*.tar.xz -C openwrt-sdk --strip-components 1
