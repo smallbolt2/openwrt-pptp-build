@@ -47,7 +47,7 @@ jobs:
           make package/pptp-linux/compile V=s
 
       - name: Upload IPK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pptp-ipk
           path: openwrt-sdk/bin/packages/mipsel_24kc/base/pptp-linux_*.ipk
